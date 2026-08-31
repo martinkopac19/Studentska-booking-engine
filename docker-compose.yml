@@ -1,0 +1,26 @@
+# Deployed as its own compose project in ~/studentskaprague on the Hetzner VPS,
+# alongside (but independent of) martinkopac-stack and kopacovci. Updating this
+# project never restarts the others.
+services:
+  app:
+    image: ghcr.io/${GITHUB_OWNER:?nastav GITHUB_OWNER v .env}/studio-welcome-guide:latest
+    container_name: studentskaprague
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATA_DIR: /data
+      TZ: ${TZ:-Europe/Prague}
+    volumes:
+      # SQLite database. Back this directory up and you have everything.
+      - ./data:/data
+    mem_limit: 512m
+    networks:
+      - proxy
+
+# No ports are published on the host: Caddy reaches the container by name over
+# the shared proxy network (the default network of the martinkopac-stack
+# project, where Caddy itself runs).
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:?nastav PROXY_NETWORK v .env}

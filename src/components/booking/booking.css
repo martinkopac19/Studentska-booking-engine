@@ -1,0 +1,414 @@
+/**
+ * Styles the booking flow needs on top of Beer CSS.
+ *
+ * Beer CSS gives cards, buttons, fields and dialogs; a pricing calendar is not
+ * a Material component, so the grid is ours. Everything uses Beer's own colour
+ * variables, so it follows the Material theme (including dark mode) instead of
+ * hardcoding a palette.
+ */
+
+/**
+ * The badge row is content, so it sizes to what it holds. Beer's `nav` could
+ * not do this: it is sticky with a fixed bar height, which left the wrapped
+ * chips floating over the calendar on a phone.
+ */
+.beer .bk-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/**
+ * The header is a genuine bar, but Beer holds it on one line. Left to itself
+ * the language picker was cut in half and the link to the guide fell off the
+ * right edge of the phone entirely.
+ */
+.beer.bk-root .bk-bar {
+  height: auto;
+  min-height: 0;
+  row-gap: 0.5rem;
+}
+
+.beer .bk-calendar {
+  --bk-line: var(--outline-variant, #cac4d0);
+}
+
+.beer .bk-cal-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+/**
+ * `minmax(0, 1fr)`, not `1fr`: a grid item's default `min-width: auto` refuses
+ * to shrink below its content, and a day cell carrying "1 890 Kč" is wider than
+ * a seventh of the card. Both grids then quietly overflowed to the right and
+ * the second month lost its Sunday column.
+ */
+.beer .bk-months {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem;
+}
+
+/* One month at a time on a phone; two side by side is unreadable below ~700px. */
+@media (max-width: 720px) {
+  .beer .bk-months {
+    grid-template-columns: 1fr;
+  }
+  .beer .bk-months > :nth-child(2) {
+    display: none;
+  }
+}
+
+.beer .bk-month-name {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-transform: capitalize;
+}
+
+.beer .bk-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.beer .bk-dow {
+  text-align: center;
+  font-size: 0.7rem;
+  padding: 0.25rem 0;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+}
+
+.beer .bk-day {
+  min-height: 3.4rem;
+  /* The narrowest the cell ever gets is 34px, at the point where two months
+     first appear beside the form. Side padding is what the price has to be
+     bought out of, so it stays minimal; the gap between cells does the
+     separating instead. */
+  padding: 0.3rem 0.1rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  transition:
+    border-color 0.1s,
+    background 0.1s;
+}
+
+.beer .bk-num {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.beer .bk-price {
+  font-size: 0.65rem;
+  line-height: 1.1;
+  color: var(--primary);
+}
+
+/* Hover is an outline only. A fill would read as "selected". */
+.beer .bk-selectable:hover {
+  border-color: var(--on-surface);
+}
+
+.beer .bk-off {
+  cursor: not-allowed;
+  color: var(--outline);
+}
+
+/* Struck through rather than labelled: the guest does not care which channel
+   took the date, only that it is gone. */
+.beer .bk-off .bk-num {
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.beer .bk-selected {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+
+.beer .bk-selected .bk-price {
+  color: var(--on-primary);
+  opacity: 0.85;
+}
+
+.beer .bk-between {
+  background: var(--primary-container);
+  border-color: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.beer .bk-between .bk-price {
+  color: var(--on-primary-container);
+}
+
+/* --- price summary ------------------------------------------------------ */
+
+.beer .bk-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.4rem 0;
+  /**
+   * Beer CSS resets every descendant with `border-radius: inherit`, so inside
+   * `<article class="round">` each row inherited the card's 2rem corner and
+   * drew its one-pixel divider as an arc. The price breakdown looked like a
+   * stack of warped pills.
+   */
+  border-radius: 0;
+}
+
+.beer .bk-row + .bk-row {
+  border-top: 1px solid var(--outline-variant);
+}
+
+.beer .bk-row .bk-label {
+  color: var(--on-surface-variant);
+  font-size: 0.85rem;
+}
+
+.beer .bk-row .bk-value {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.beer .bk-total {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.beer .bk-nightly .bk-row {
+  border-top: none;
+  padding: 0.15rem 0;
+  font-size: 0.85rem;
+  color: var(--on-surface-variant);
+}
+
+.beer .bk-discount {
+  color: var(--primary);
+}
+
+/* --- payment choice ----------------------------------------------------- */
+
+.beer .bk-pays {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.beer .bk-pay {
+  border: 1px solid var(--outline-variant);
+  border-radius: 0.9rem;
+  padding: 0.9rem 0.6rem;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.1s,
+    background 0.1s;
+}
+
+.beer .bk-pay:hover {
+  border-color: var(--on-surface);
+}
+
+.beer .bk-pay.bk-on {
+  border-color: var(--primary);
+  background: var(--primary-container);
+}
+
+.beer .bk-pay i {
+  font-size: 1.6rem;
+}
+
+.beer .bk-pay .bk-pay-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.beer .bk-pay .bk-pay-sub {
+  font-size: 0.75rem;
+  color: var(--on-surface-variant);
+}
+
+/* --- consent ------------------------------------------------------------ */
+
+/**
+ * Beer CSS keeps checkbox labels on a single line, which is right for "Remember
+ * me" and wrong for a sentence carrying a link. At anything under a wide
+ * desktop the consent line ran past the card and was cut off mid-word — on the
+ * one control the guest legally has to read.
+ */
+/* Prefixed with the wrapper class throughout this block: Beer CSS is injected
+   into <head> after this file, so a rule of equal weight would lose the tie. */
+.beer.bk-root .bk-terms {
+  white-space: normal;
+  align-items: flex-start;
+}
+
+/**
+ * Beer makes the label's span a flex container, which turns "Súhlasím s", the
+ * link and the full stop into three separate flex items — they wrapped as
+ * blocks and the sentence came apart. It is a sentence, so it lays out as text.
+ */
+.beer.bk-root .bk-terms > span {
+  display: block;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+/* --- confirmation ------------------------------------------------------- */
+
+.beer .bk-code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.beer .bk-qr {
+  width: 170px;
+  height: 170px;
+  border: 1px solid var(--outline-variant);
+  border-radius: 0.75rem;
+}
+
+.beer .bk-mono {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  word-break: break-all;
+}
+
+.beer .bk-steps {
+  counter-reset: bk;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.beer .bk-steps li {
+  counter-increment: bk;
+  position: relative;
+  padding: 0 0 1rem 2.25rem;
+}
+
+.beer .bk-steps li::before {
+  content: counter(bk);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.beer .bk-steps li:last-child {
+  padding-bottom: 0;
+}
+
+/* --- page shell --------------------------------------------------------- */
+
+/**
+ * The scoped Beer CSS build defines the Material tokens but paints nothing, so
+ * the browser's own canvas shows through — black on a machine set to dark mode.
+ * The wrapper therefore states its surface explicitly.
+ */
+/* Double class on purpose: Beer CSS ships its own `.beer` rule and, depending
+   on stylesheet order, a single-class selector loses to it. */
+/**
+ * Brand palette. Beer CSS ships a default purple and its companion package
+ * `material-dynamic-colors` derives a palette at runtime — but it writes the
+ * tokens onto `:root`, which is exactly the collision that broke the guide.
+ * Declaring the tokens here keeps them inside `.beer`, where they belong, and
+ * needs no extra dependency.
+ *
+ * The navy is the one the guide already uses: `--primary: 213 55% 22%`.
+ *
+ * Naming only the accents is not enough. Material draws card, field and divider
+ * surfaces from a separate neutral ladder, and whatever is left unstated keeps
+ * Beer's default lilac — which is why the cards sat at `#f2ecf1` on a warm
+ * `#f9f8f5` page and the whole thing looked faintly pink. The ladder below is
+ * the same warm neutral as the page, so a card reads as a raised sheet of the
+ * background rather than a different material.
+ */
+.beer.bk-root {
+  --primary: #193557;
+  --on-primary: #ffffff;
+  --primary-container: #d8e3f6;
+  --on-primary-container: #0d1d31;
+  --secondary: #4a5b70;
+  --on-secondary: #ffffff;
+  --secondary-container: #dde3ea;
+  --on-secondary-container: #131c26;
+
+  /* Tertiary is what the flow uses for "read this" boxes — a sold-out range, a
+     rejected coupon, dates taken while the form was open. Beer's default is
+     candy pink, which reads as decoration. This is the guide's own `--gold`
+     (`38 78% 52%`), the colour already on its "Book Directly" button, so the
+     two halves of the site share one accent instead of inventing a second. */
+  --tertiary: #e49e25;
+  --on-tertiary: #14171a;
+  --tertiary-container: #f6e6c8;
+  --on-tertiary-container: #4a3208;
+
+  /* Stated outright rather than inherited: the wrapper must paint a background
+     of its own, or the browser canvas shows through — black on a machine set to
+     dark mode. */
+  --surface: #f9f8f5;
+  --on-surface: #14171a;
+  --background: #f9f8f5;
+  --on-background: #14171a;
+
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #fbfaf7;
+  --surface-container: #f4f2ed;
+  --surface-container-high: #eeece6;
+  --surface-container-highest: #e8e6df;
+  --surface-bright: #fdfcfa;
+  --surface-dim: #dedbd2;
+  --surface-variant: #e6e3da;
+  --on-surface-variant: #4a4a44;
+
+  --outline: #797870;
+  --outline-variant: #c9c7be;
+
+  --inverse-surface: #2f302e;
+  --inverse-on-surface: #f4f2ed;
+  --inverse-primary: #a9c4e8;
+
+  min-height: 100vh;
+  background: var(--surface);
+  color: var(--on-surface);
+}
+
+.beer .bk-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem 4rem;
+}
+
+.beer .bk-brand {
+  font-weight: 700;
+}

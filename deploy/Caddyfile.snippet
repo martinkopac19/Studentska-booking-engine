@@ -1,0 +1,27 @@
+# Add to the existing Caddyfile of the Caddy stack already running on the VPS.
+#
+# Validate before reloading so a typo cannot take redmine and kopacovci down
+# with it:
+#   docker exec <caddy_container> caddy validate --config /etc/caddy/Caddyfile
+#   docker exec <caddy_container> caddy reload   --config /etc/caddy/Caddyfile
+#
+# The DNS A record for studentskaprague.cz must already point at this server,
+# otherwise the certificate request fails.
+
+www.studentskaprague.cz {
+	redir https://studentskaprague.cz{uri} permanent
+}
+
+studentskaprague.cz {
+	encode zstd gzip
+
+	# `studentskaprague` is the container_name from docker-compose.yml; both
+	# containers share the external proxy network, so this resolves by name.
+	reverse_proxy studentskaprague:8080
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+}
